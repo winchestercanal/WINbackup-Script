@@ -1,410 +1,249 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-:: Verificar se e Administrador
 fltmc >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ===============================================
-    echo Este script precisa ser executado como ADMINISTRADOR.
-    echo ===============================================
-    echo Clique com o botao direito no arquivo e selecione:
-    echo "Executar como administrador".
+    cls
+    echo.
+    echo  Este script precisa ser executado como ADMINISTRADOR.
+    echo  Clique com o botao direito e selecione "Executar como administrador".
     echo.
     pause
     exit /b
 )
 
-:: Definir timestamp e variaveis
 for /f "tokens=1-4 delims=/ " %%a in ("%date%") do (
-    set "DD=%%a"
-    set "MM=%%b"
-    set "YYYY=%%c"
+    set "DD=%%a" & set "MM=%%b" & set "YYYY=%%c"
 )
-for /f "tokens=1-3 delims=:.," %%a in ("%time%") do (
-    set "HH=%%a"
-    set "Min=%%b"
-    set "SS=%%c"
+for /f "tokens=1-3 delims=:., " %%a in ("%time%") do (
+    set "HH=%%a" & set "Min=%%b" & set "SS=%%c"
 )
-
-set "timestampFile=%YYYY%-%MM%-%DD%_%HH%%Min%%SS%"
+set "TS=%YYYY%-%MM%-%DD%_%HH%%Min%%SS%"
 set "scriptDir=%~dp0"
-set "logFile=%scriptDir%drivers_backup_%timestampFile%.log"
-set "backupDir=C:\DriversBackup"
+set "logFile=%scriptDir%backup_%TS%.log"
+echo [%date% %time%] Inicio do script > "%logFile%"
 
-echo [%date% %time%] [INFO] Inicio do script > "%logFile%"
-
-:: ================= MENU PRINCIPAL =================
 :menu
 cls
 echo.
-echo  ===================================================
-echo    BACKUP E RESTAURACAO - WINchester
-echo  ===================================================
-echo    Script disponibilizado por Canal WINchester
-echo    www.youtube.com/WINchesterCanal
-echo  ===================================================
+echo  +==================================================+
+echo  ^|       BACKUP E RESTAURACAO - WINchester         ^|
+echo  +==================================================+
 echo.
-echo   1 - Arquivos Pessoais (Backup)
-echo   2 - DRIVERS (backup/restauracao)
-echo   3 - Navegadores (backup/restauracao)
-echo   4 - Acessar tutorial
-echo   0 - Sair
+echo  +--------------------------------------------------+
+echo  ^|   Script disponibilizado por Canal WINchester   ^|
+echo  ^|   Acesse: www.youtube.com/WINchesterCanal       ^|
+echo  +--------------------------------------------------+
 echo.
+echo   1  -  Backup de Arquivos Pessoais
+echo   2  -  Backup de Drivers
+echo   3  -  Backup de Navegadores
+echo   4  -  Ver Tutorial no YouTube
+echo   0  -  Sair
+echo.
+echo  --------------------------------------------------
 set /p opcao=  Digite sua opcao: 
 
-if "%opcao%"=="1" goto menuBackupArquivos
-if "%opcao%"=="2" goto menuDrivers
-if "%opcao%"=="3" goto menuNavegadores
-if "%opcao%"=="4" goto abrirTutorial
-if "%opcao%"=="0" goto sair
+if "!opcao!"=="1" goto menuArquivos
+if "!opcao!"=="2" goto backupDrivers
+if "!opcao!"=="3" goto menuNavegadores
+if "!opcao!"=="4" goto abrirTutorial
+if "!opcao!"=="0" goto sair
 
-echo [%date% %time%] [ERRO] Opcao invalida: %opcao% >> "%logFile%"
-echo Opcao invalida. Por favor, digite 1, 2, 3, 4 ou 0.
-timeout /t 3 >nul
-goto menu
-
-:: ================= SUBMENU DRIVERS =================
-:menuDrivers
-cls
-echo.
-echo  ===================================================
-echo    DRIVERS - backup/restauracao
-echo  ===================================================
-echo.
-echo   1 - Fazer backup dos drivers
-echo   2 - Restaurar drivers
-echo   0 - Voltar ao menu principal
-echo.
-set /p opcaoDriver=  Digite sua opcao: 
-
-if "!opcaoDriver!"=="1" goto selecionarPasta
-if "!opcaoDriver!"=="2" goto restaurarDrivers
-if "!opcaoDriver!"=="0" goto menu
-
-echo Opcao invalida. Tente novamente.
+echo  Opcao invalida. Tente novamente.
 timeout /t 2 >nul
-goto menuDrivers
-
-:: ================= BACKUP DOS DRIVERS =================
-:selecionarPasta
-echo.
-echo -----------------------------------------------
-echo Informe o destino do backup dos drivers.
-echo Exemplo: L:\backup
-echo -----------------------------------------------
-set /p backupDestino=Destino: 
-
-if "!backupDestino!"=="" (
-    echo O destino nao pode ser vazio.
-    goto selecionarPasta
-)
-
-if not exist "!backupDestino!" (
-    echo O destino "!backupDestino!" nao foi encontrado.
-    echo Verifique se o dispositivo esta conectado e tente novamente.
-    echo [%date% %time%] [ERRO] Destino de backup de drivers nao encontrado: "!backupDestino!" >> "%logFile%"
-    pause
-    goto selecionarPasta
-)
-
-set "backupDir=!backupDestino!\DRIVERS"
-
-if not exist "!backupDir!" (
-    md "!backupDir!"
-    echo [OK] Pasta DRIVERS criada em "!backupDestino!".
-)
-
-:iniciarBackup
-echo.
-echo Iniciando o backup dos drivers...
-echo [%date% %time%] [INFO] Iniciando backup para: "!backupDir!" >> "%logFile%"
-
-dism /online /export-driver /destination:"!backupDir!"
-echo Backup concluido. Os drivers foram salvos em "!backupDir!".
-echo [%date% %time%] [INFO] Backup concluido em: "!backupDir!" >> "%logFile%"
-pause
 goto menu
 
-:: ================= RESTAURACAO DOS DRIVERS =================
-:restaurarDrivers
-echo.
-set /p restoreDir=Digite o caminho onde estao os drivers para restauracao: 
-echo [%date% %time%] [INFO] Pasta definida para restauracao: "%restoreDir%" >> "%logFile%"
 
-if not exist "%restoreDir%" (
-    echo Caminho da pasta de restauracao "%restoreDir%" invalido ou inexistente.
-    echo [%date% %time%] [ERRO] Caminho de restauracao invalido: "%restoreDir%" >> "%logFile%"
-    pause
-    goto menu
-)
-
-echo Iniciando a restauracao dos drivers de "%restoreDir%"...
-echo [%date% %time%] [INFO] Iniciando restauracao dos drivers >> "%logFile%"
-
-for /r "%restoreDir%" %%f in (*.inf) do (
-    echo Instalando driver: %%f
-    echo [%date% %time%] [INFO] Instalando driver: %%f >> "%logFile%"
-    pnputil /add-driver "%%f" /install
-)
-
-echo Restauracao concluida.
-echo [%date% %time%] [INFO] Restauracao concluida para "%restoreDir%" >> "%logFile%"
-pause
-goto menu
-
-:: ================= MENU BACKUP DE ARQUIVOS PESSOAIS =================
-:menuBackupArquivos
+:: ================================================================
+::                  1 - BACKUP DE ARQUIVOS PESSOAIS
+:: ================================================================
+:menuArquivos
 cls
 echo.
-echo  ===================================================
-echo    ARQUIVOS PESSOAIS - Backup
-echo  ===================================================
+echo  +==================================================+
+echo  ^|          BACKUP DE ARQUIVOS PESSOAIS            ^|
+echo  +==================================================+
 echo.
-echo Pastas disponiveis para backup:
-echo   1 - Documentos
-echo   2 - Imagens
-echo   3 - Musicas
-echo   4 - Videos
-echo   5 - Downloads
-echo   6 - Desktop
+echo   C  -  Backup Completo
+echo          (Documentos, Imagens, Musicas, Videos,
+echo           Downloads e Desktop)
 echo.
-echo Modos de backup:
-echo   C - Backup Completo (todas as pastas acima)
-echo   S - Backup Seletivo (escolher pastas)
-echo   0 - Voltar ao menu principal
+echo   S  -  Backup Seletivo
+echo          (Escolher quais pastas copiar)
 echo.
-set /p modoBackup=Digite sua opcao (C, S ou 0): 
+echo   0  -  Voltar
+echo.
+set /p modoArq=  Digite sua opcao (C, S ou 0): 
 
-if /i "!modoBackup!"=="c" goto backupCompleto
-if /i "!modoBackup!"=="s" goto backupSeletivo
-if "!modoBackup!"=="0" goto menu
+if /i "!modoArq!"=="c" (
+    set "bDoc=1" & set "bImg=1" & set "bMus=1"
+    set "bVid=1" & set "bDwn=1" & set "bDsk=1"
+    goto pedirDestinoArquivos
+)
+if /i "!modoArq!"=="s" goto selecionarPastas
+if "!modoArq!"=="0" goto menu
 
-echo Opcao invalida. Tente novamente.
+echo  Opcao invalida. Tente novamente.
 timeout /t 2 >nul
-goto menuBackupArquivos
+goto menuArquivos
 
-:: ================= BACKUP COMPLETO =================
-:backupCompleto
-echo [%date% %time%] [INFO] Modo de backup selecionado: Completo >> "%logFile%"
-set "bDocumentos=1"
-set "bImagens=1"
-set "bMusicas=1"
-set "bVideos=1"
-set "bDownloads=1"
-set "bDesktop=1"
-goto solicitarDestinoArquivos
-
-:: ================= BACKUP SELETIVO =================
-:backupSeletivo
+:selecionarPastas
 cls
 echo.
-echo  ===================================================
-echo    BACKUP SELETIVO
-echo  ===================================================
+echo  +==================================================+
+echo  ^|           BACKUP SELETIVO - PASTAS              ^|
+echo  +==================================================+
 echo.
-echo Digite os numeros das pastas separados por virgula.
-echo Exemplo: 1,3,5
+echo  Digite os numeros desejados separados por virgula.
+echo  Exemplo: 1,3,5
 echo.
-echo   1 - Documentos
-echo   2 - Imagens
-echo   3 - Musicas
-echo   4 - Videos
-echo   5 - Downloads
-echo   6 - Desktop
+echo   1  -  Documentos
+echo   2  -  Imagens
+echo   3  -  Musicas
+echo   4  -  Videos
+echo   5  -  Downloads
+echo   6  -  Desktop
 echo.
-set /p selecao=Sua selecao: 
+set /p sel=  Sua selecao: 
 
-set "bDocumentos=0"
-set "bImagens=0"
-set "bMusicas=0"
-set "bVideos=0"
-set "bDownloads=0"
-set "bDesktop=0"
+set "bDoc=0" & set "bImg=0" & set "bMus=0"
+set "bVid=0" & set "bDwn=0" & set "bDsk=0"
 
-echo !selecao! | find "1" >nul && set "bDocumentos=1"
-echo !selecao! | find "2" >nul && set "bImagens=1"
-echo !selecao! | find "3" >nul && set "bMusicas=1"
-echo !selecao! | find "4" >nul && set "bVideos=1"
-echo !selecao! | find "5" >nul && set "bDownloads=1"
-echo !selecao! | find "6" >nul && set "bDesktop=1"
+echo !sel! | find "1" >nul 2>&1 && set "bDoc=1"
+echo !sel! | find "2" >nul 2>&1 && set "bImg=1"
+echo !sel! | find "3" >nul 2>&1 && set "bMus=1"
+echo !sel! | find "4" >nul 2>&1 && set "bVid=1"
+echo !sel! | find "5" >nul 2>&1 && set "bDwn=1"
+echo !sel! | find "6" >nul 2>&1 && set "bDsk=1"
 
-set "algumaSelecionada=0"
-if "!bDocumentos!"=="1" set "algumaSelecionada=1"
-if "!bImagens!"=="1" set "algumaSelecionada=1"
-if "!bMusicas!"=="1" set "algumaSelecionada=1"
-if "!bVideos!"=="1" set "algumaSelecionada=1"
-if "!bDownloads!"=="1" set "algumaSelecionada=1"
-if "!bDesktop!"=="1" set "algumaSelecionada=1"
-
-if "!algumaSelecionada!"=="0" (
-    echo Nenhuma pasta valida selecionada. Tente novamente.
-    echo [%date% %time%] [ERRO] Nenhuma pasta valida selecionada: "!selecao!" >> "%logFile%"
+if "!bDoc!!bImg!!bMus!!bVid!!bDwn!!bDsk!"=="000000" (
+    echo  Nenhuma pasta valida selecionada. Tente novamente.
     timeout /t 3 >nul
-    goto backupSeletivo
+    goto selecionarPastas
 )
 
-echo [%date% %time%] [INFO] Modo de backup selecionado: Seletivo - Selecao: "!selecao!" >> "%logFile%"
-
-:solicitarDestinoArquivos
+:pedirDestinoArquivos
 echo.
-echo -----------------------------------------------
-echo Informe o destino do backup.
-echo Exemplo: L:\backup
-echo -----------------------------------------------
-set /p destinoArquivos=Destino: 
+echo  --------------------------------------------------
+echo  Informe o destino do backup. Exemplo: L:\backup
+echo  --------------------------------------------------
+set /p dest=  Destino: 
 
-if "!destinoArquivos!"=="" (
-    echo O destino nao pode ser vazio.
-    goto solicitarDestinoArquivos
+if "!dest!"=="" (
+    echo  O destino nao pode ser vazio.
+    goto pedirDestinoArquivos
 )
-
-if not exist "!destinoArquivos!" (
-    echo O destino "!destinoArquivos!" nao foi encontrado.
-    echo Verifique se o dispositivo esta conectado e tente novamente.
-    echo [%date% %time%] [ERRO] Destino de backup de arquivos nao encontrado: "!destinoArquivos!" >> "%logFile%"
+if not exist "!dest!" (
+    echo  Destino nao encontrado. Verifique se o dispositivo
+    echo  esta conectado e tente novamente.
     pause
-    goto solicitarDestinoArquivos
+    goto pedirDestinoArquivos
 )
 
-echo [%date% %time%] [INFO] Destino para backup de arquivos: "!destinoArquivos!" >> "%logFile%"
-
-:executarBackupArquivos
 cls
 echo.
-echo  ===================================================
-echo    EXECUTANDO BACKUP DE ARQUIVOS...
-echo  ===================================================
+echo  Iniciando backup de arquivos pessoais...
+echo  Destino: !dest!
 echo.
-echo Destino: !destinoArquivos!
+echo [%date% %time%] Backup de arquivos para "!dest!" >> "%logFile%"
+
+if "!bDoc!"=="1" (
+    echo  [>] Copiando Documentos...
+    robocopy "%USERPROFILE%\Documents" "!dest!\Documentos" /E /NP /NFL /NDL /R:2 /W:3
+    echo  [OK] Documentos concluido.
+    echo [%date% %time%] Documentos copiados >> "%logFile%"
+)
+if "!bImg!"=="1" (
+    echo  [>] Copiando Imagens...
+    robocopy "%USERPROFILE%\Pictures" "!dest!\Imagens" /E /NP /NFL /NDL /R:2 /W:3
+    echo  [OK] Imagens concluido.
+    echo [%date% %time%] Imagens copiadas >> "%logFile%"
+)
+if "!bMus!"=="1" (
+    echo  [>] Copiando Musicas...
+    robocopy "%USERPROFILE%\Music" "!dest!\Musicas" /E /NP /NFL /NDL /R:2 /W:3
+    echo  [OK] Musicas concluido.
+    echo [%date% %time%] Musicas copiadas >> "%logFile%"
+)
+if "!bVid!"=="1" (
+    echo  [>] Copiando Videos...
+    robocopy "%USERPROFILE%\Videos" "!dest!\Videos" /E /NP /NFL /NDL /R:2 /W:3
+    echo  [OK] Videos concluido.
+    echo [%date% %time%] Videos copiados >> "%logFile%"
+)
+if "!bDwn!"=="1" (
+    echo  [>] Copiando Downloads...
+    robocopy "%USERPROFILE%\Downloads" "!dest!\Downloads" /E /NP /NFL /NDL /R:2 /W:3
+    echo  [OK] Downloads concluido.
+    echo [%date% %time%] Downloads copiados >> "%logFile%"
+)
+if "!bDsk!"=="1" (
+    echo  [>] Copiando Desktop...
+    robocopy "%USERPROFILE%\Desktop" "!dest!\Desktop" /E /NP /NFL /NDL /R:2 /W:3
+    echo  [OK] Desktop concluido.
+    echo [%date% %time%] Desktop copiado >> "%logFile%"
+)
+
 echo.
-set "erros=0"
-set "copiadas=0"
-
-if "!bDocumentos!"=="1" (
-    set "origem=%USERPROFILE%\Documents"
-    set "destino=!destinoArquivos!\Documentos"
-    echo [>] Copiando Documentos...
-    echo [%date% %time%] [INFO] Copiando Documentos >> "%logFile%"
-    if not exist "!destino!" mkdir "!destino!"
-    robocopy "!origem!" "!destino!" /E /NP /NFL /NDL /R:2 /W:3
-    if !errorlevel! leq 7 (
-        echo [OK] Documentos copiados com sucesso.
-        echo [%date% %time%] [INFO] Documentos copiados com sucesso >> "%logFile%"
-        set /a copiadas+=1
-    ) else (
-        echo [ERRO] Falha ao copiar Documentos.
-        echo [%date% %time%] [ERRO] Falha ao copiar Documentos >> "%logFile%"
-        set /a erros+=1
-    )
-    echo.
-)
-
-if "!bImagens!"=="1" (
-    set "origem=%USERPROFILE%\Pictures"
-    set "destino=!destinoArquivos!\Imagens"
-    echo [>] Copiando Imagens...
-    echo [%date% %time%] [INFO] Copiando Imagens >> "%logFile%"
-    if not exist "!destino!" mkdir "!destino!"
-    robocopy "!origem!" "!destino!" /E /NP /NFL /NDL /R:2 /W:3
-    if !errorlevel! leq 7 (
-        echo [OK] Imagens copiadas com sucesso.
-        echo [%date% %time%] [INFO] Imagens copiadas com sucesso >> "%logFile%"
-        set /a copiadas+=1
-    ) else (
-        echo [ERRO] Falha ao copiar Imagens.
-        echo [%date% %time%] [ERRO] Falha ao copiar Imagens >> "%logFile%"
-        set /a erros+=1
-    )
-    echo.
-)
-
-if "!bMusicas!"=="1" (
-    set "origem=%USERPROFILE%\Music"
-    set "destino=!destinoArquivos!\Musicas"
-    echo [>] Copiando Musicas...
-    echo [%date% %time%] [INFO] Copiando Musicas >> "%logFile%"
-    if not exist "!destino!" mkdir "!destino!"
-    robocopy "!origem!" "!destino!" /E /NP /NFL /NDL /R:2 /W:3
-    if !errorlevel! leq 7 (
-        echo [OK] Musicas copiadas com sucesso.
-        echo [%date% %time%] [INFO] Musicas copiadas com sucesso >> "%logFile%"
-        set /a copiadas+=1
-    ) else (
-        echo [ERRO] Falha ao copiar Musicas.
-        echo [%date% %time%] [ERRO] Falha ao copiar Musicas >> "%logFile%"
-        set /a erros+=1
-    )
-    echo.
-)
-
-if "!bVideos!"=="1" (
-    set "origem=%USERPROFILE%\Videos"
-    set "destino=!destinoArquivos!\Videos"
-    echo [>] Copiando Videos...
-    echo [%date% %time%] [INFO] Copiando Videos >> "%logFile%"
-    if not exist "!destino!" mkdir "!destino!"
-    robocopy "!origem!" "!destino!" /E /NP /NFL /NDL /R:2 /W:3
-    if !errorlevel! leq 7 (
-        echo [OK] Videos copiados com sucesso.
-        echo [%date% %time%] [INFO] Videos copiados com sucesso >> "%logFile%"
-        set /a copiadas+=1
-    ) else (
-        echo [ERRO] Falha ao copiar Videos.
-        echo [%date% %time%] [ERRO] Falha ao copiar Videos >> "%logFile%"
-        set /a erros+=1
-    )
-    echo.
-)
-
-if "!bDownloads!"=="1" (
-    set "origem=%USERPROFILE%\Downloads"
-    set "destino=!destinoArquivos!\Downloads"
-    echo [>] Copiando Downloads...
-    echo [%date% %time%] [INFO] Copiando Downloads >> "%logFile%"
-    if not exist "!destino!" mkdir "!destino!"
-    robocopy "!origem!" "!destino!" /E /NP /NFL /NDL /R:2 /W:3
-    if !errorlevel! leq 7 (
-        echo [OK] Downloads copiados com sucesso.
-        echo [%date% %time%] [INFO] Downloads copiados com sucesso >> "%logFile%"
-        set /a copiadas+=1
-    ) else (
-        echo [ERRO] Falha ao copiar Downloads.
-        echo [%date% %time%] [ERRO] Falha ao copiar Downloads >> "%logFile%"
-        set /a erros+=1
-    )
-    echo.
-)
-
-if "!bDesktop!"=="1" (
-    set "origem=%USERPROFILE%\Desktop"
-    set "destino=!destinoArquivos!\Desktop"
-    echo [>] Copiando Desktop...
-    echo [%date% %time%] [INFO] Copiando Desktop >> "%logFile%"
-    if not exist "!destino!" mkdir "!destino!"
-    robocopy "!origem!" "!destino!" /E /NP /NFL /NDL /R:2 /W:3
-    if !errorlevel! leq 7 (
-        echo [OK] Desktop copiado com sucesso.
-        echo [%date% %time%] [INFO] Desktop copiado com sucesso >> "%logFile%"
-        set /a copiadas+=1
-    ) else (
-        echo [ERRO] Falha ao copiar Desktop.
-        echo [%date% %time%] [ERRO] Falha ao copiar Desktop >> "%logFile%"
-        set /a erros+=1
-    )
-    echo.
-)
-
-echo -----------------------------------------------
-echo  Backup de arquivos concluido!
-echo  Pastas copiadas com sucesso : !copiadas!
-echo  Pastas com erro             : !erros!
-echo  Destino                     : !destinoArquivos!
-echo -----------------------------------------------
-echo [%date% %time%] [INFO] Backup de arquivos finalizado. Sucesso: !copiadas! / Erros: !erros! >> "%logFile%"
+echo  --------------------------------------------------
+echo  Backup de arquivos pessoais concluido!
+echo  Destino: !dest!
+echo  --------------------------------------------------
+echo [%date% %time%] Backup de arquivos concluido >> "%logFile%"
 pause
 goto menu
 
-:: ================= MENU NAVEGADORES =================
+
+:: ================================================================
+::                  2 - BACKUP DE DRIVERS
+:: ================================================================
+:backupDrivers
+cls
+echo.
+echo  +==================================================+
+echo  ^|              BACKUP DE DRIVERS                  ^|
+echo  +==================================================+
+echo.
+echo  --------------------------------------------------
+echo  Informe o destino do backup. Exemplo: L:\backup
+echo  --------------------------------------------------
+set /p destDrv=  Destino: 
+
+if "!destDrv!"=="" (
+    echo  O destino nao pode ser vazio.
+    goto backupDrivers
+)
+if not exist "!destDrv!" (
+    echo  Destino nao encontrado. Verifique se o dispositivo
+    echo  esta conectado e tente novamente.
+    pause
+    goto backupDrivers
+)
+
+cls
+echo.
+echo  Iniciando backup dos drivers...
+echo  Destino: !destDrv!\Drivers
+echo.
+echo [%date% %time%] Backup de drivers para "!destDrv!\Drivers" >> "%logFile%"
+
+if not exist "!destDrv!\Drivers" mkdir "!destDrv!\Drivers"
+dism /online /export-driver /destination:"!destDrv!\Drivers"
+
+echo.
+echo  --------------------------------------------------
+echo  Backup de drivers concluido!
+echo  Destino: !destDrv!\Drivers
+echo  --------------------------------------------------
+echo [%date% %time%] Backup de drivers concluido >> "%logFile%"
+pause
+goto menu
+
+
+:: ================================================================
+::                  3 - BACKUP DE NAVEGADORES
+:: ================================================================
 :menuNavegadores
 cls
 echo.
@@ -643,21 +482,15 @@ set /p opcaoRestNav=  Digite sua opcao:
 if "!opcaoRestNav!"=="1" (
     set "restNavegador=Edge"
     set "restNavProcesso=msedge.exe"
-    goto setPerfilEdge
+    set "restNavPerfil=%LOCALAPPDATA%\Microsoft\Edge\User Data\Default"
+    goto solicitarOrigemBookmark
 )
 if "!opcaoRestNav!"=="2" (
     set "restNavegador=Chrome"
     set "restNavProcesso=chrome.exe"
-    goto setPerfilChrome
+    set "restNavPerfil=%LOCALAPPDATA%\Google\Chrome\User Data\Default"
+    goto solicitarOrigemBookmark
 )
-
-:setPerfilEdge
-set "restNavPerfil=%LOCALAPPDATA%\Microsoft\Edge\User Data\Default"
-goto solicitarOrigemBookmark
-
-:setPerfilChrome
-set "restNavPerfil=%LOCALAPPDATA%\Google\Chrome\User Data\Default"
-goto solicitarOrigemBookmark
 if "!opcaoRestNav!"=="0" goto menu
 
 echo Opcao invalida. Tente novamente.
@@ -689,18 +522,10 @@ if not exist "!origemBookmark!" (
 
 echo [%date% %time%] [INFO] Buscando Bookmarks em: "!origemBookmark!" >> "%logFile%"
 echo.
+echo [>] Procurando arquivo de favoritos em "!origemBookmark!" e subpastas...
 
 set "bookmarkEncontrado="
-
-:: Verifica se o usuario forneceu o arquivo diretamente
-for %%I in ("!origemBookmark!") do set "bmNome=%%~nxI"
-if /i "!bmNome!"=="Bookmarks" (
-    set "bookmarkEncontrado=!origemBookmark!"
-    echo [OK] Arquivo fornecido diretamente: !bookmarkEncontrado!
-) else (
-    echo [>] Procurando arquivo Bookmarks em "!origemBookmark!" e subpastas...
-    call :buscarBookmark "!origemBookmark!"
-)
+call :buscarBookmark "!origemBookmark!"
 
 if not defined bookmarkEncontrado (
     echo.
@@ -727,30 +552,20 @@ if !errorlevel! equ 0 (
 
 echo.
 echo [>] Restaurando favoritos para o !restNavegador!...
-echo     Origem : !bookmarkEncontrado!
-echo     Destino: !restNavPerfil!
 
-if not exist "!restNavPerfil!" md "!restNavPerfil!"
+if not exist "!restNavPerfil!" mkdir "!restNavPerfil!"
 
-:: Faz backup do Bookmarks atual antes de sobrescrever
-if exist "!restNavPerfil!\Bookmarks" (
-    copy /Y "!restNavPerfil!\Bookmarks" "!restNavPerfil!\Bookmarks.bak" >nul 2>&1
-)
-
-:: Usa PowerShell para copiar, evitando problemas de permissao e caminho com espacos
-powershell -NoProfile -Command "Copy-Item -Path \"!bookmarkEncontrado!\" -Destination \"!restNavPerfil!\Bookmarks\" -Force"
-set "copyResult=!errorlevel!"
-if !copyResult! equ 0 (
+set "destBookmark=!restNavPerfil!\Bookmarks"
+copy /Y "!bookmarkEncontrado!" "!destBookmark!" >nul 2>&1
+if exist "!destBookmark!" (
     echo [OK] Favoritos restaurados com sucesso!
     echo [%date% %time%] [INFO] Favoritos do !restNavegador! restaurados com sucesso >> "%logFile%"
-    goto posRestauracao
+) else (
+    echo [ERRO] Falha ao restaurar os favoritos.
+    echo [%date% %time%] [ERRO] Falha ao restaurar favoritos do !restNavegador! >> "%logFile%"
+    pause
+    goto menu
 )
-echo [ERRO] Falha ao restaurar os favoritos. Codigo: !copyResult!
-echo [%date% %time%] [ERRO] Falha ao restaurar favoritos do !restNavegador! - codigo !copyResult! >> "%logFile%"
-pause
-goto menu
-
-:posRestauracao
 
 echo.
 echo  ################################################
@@ -792,22 +607,30 @@ goto menu
 
 :: ================= SUBROTINA: BUSCAR BOOKMARK =================
 :buscarBookmark
-for /f "usebackq delims=" %%F in (`dir /s /b "%~1\Bookmarks" 2^>nul`) do (
+for /r "%~1" %%F in (Bookmarks) do (
     if not defined bookmarkEncontrado (
         set "bookmarkEncontrado=%%F"
     )
 )
 exit /b
 
-:: ================= ABRIR TUTORIAL =================
+
+:: ================================================================
+::                  4 - TUTORIAL
+:: ================================================================
 :abrirTutorial
-echo Abrindo Winchester Canal no YouTube...
+echo.
+echo  Abrindo Canal WINchester no YouTube...
 start https://youtu.be/ymOwOXdzHGQ
 timeout /t 3 >nul
 goto menu
 
-:: ================= SAIR =================
+
+:: ================================================================
+::                  SAIR
+:: ================================================================
 :sair
-echo Saindo...
-echo [%date% %time%] [INFO] Script encerrado pelo usuario >> "%logFile%"
+echo.
+echo  Saindo...
+echo [%date% %time%] Script encerrado pelo usuario >> "%logFile%"
 exit /b
