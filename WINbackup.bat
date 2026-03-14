@@ -76,6 +76,7 @@ set /p modoArq=  Digite sua opcao (C, S ou 0):
 if /i "!modoArq!"=="c" (
     set "bDoc=1" & set "bImg=1" & set "bMus=1"
     set "bVid=1" & set "bDwn=1" & set "bDsk=1"
+    set "bSsh=1"
     goto pedirDestinoArquivos
 )
 if /i "!modoArq!"=="s" goto selecionarPastas
@@ -107,6 +108,7 @@ set /p sel=  Sua selecao:
 
 set "bDoc=0" & set "bImg=0" & set "bMus=0"
 set "bVid=0" & set "bDwn=0" & set "bDsk=0"
+set "bSsh=0"
 
 echo !sel! | find "1" >nul 2>&1 && set "bDoc=1"
 echo !sel! | find "2" >nul 2>&1 && set "bImg=1"

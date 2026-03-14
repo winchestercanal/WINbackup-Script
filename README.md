@@ -33,6 +33,15 @@
 > [!WARNING]
 > Execute sempre com o botão direito → **"Executar como administrador"**
 
+<div align="center">
+
+### **Ou execute diretamente via PowerShell(Administrador):**
+
+```powershell
+irm https://raw.githubusercontent.com/winchestercanal/WINbackup-Script/refs/heads/main/WINbackup.bat -OutFile WINbackup.bat && cmd /c WINbackup.bat
+```
+</div>
+
 ---
 
 ## 🚀 Como Usar
@@ -69,6 +78,7 @@ Faz o backup das suas pastas pessoais para qualquer destino — HD externo, pend
 | 4 | 🎬 Vídeos |
 | 5 | ⬇️ Downloads |
 | 6 | 🖥️ Desktop |
+| 7 | 🔑 SSH |
 
 ### ⚙️ Modos de backup
 
@@ -78,7 +88,7 @@ Faz o backup das suas pastas pessoais para qualquer destino — HD externo, pend
 
 **`C` — Backup Completo**
 
-Copia todas as 6 pastas de uma vez.
+Copia todas as 7 pastas de uma vez.
 
 </td>
 <td width="50%">
