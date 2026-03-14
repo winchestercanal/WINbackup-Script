@@ -33,6 +33,15 @@
 > [!WARNING]
 > Execute sempre com o botão direito → **"Executar como administrador"**
 
+<div align="center">
+
+### **Ou execute diretamente via PowerShell(Administrador):**
+
+```powershell
+irm https://raw.githubusercontent.com/winchestercanal/WINbackup-Script/refs/heads/main/WINbackup.bat -OutFile WINbackup.bat && cmd /c WINbackup.bat
+```
+</div>
+
 ---
 
 ## 🚀 Como Usar
