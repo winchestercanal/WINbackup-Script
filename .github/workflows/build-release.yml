@@ -1,0 +1,66 @@
+name: Build and Release EXE
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Bat To Exe Converter
+        run: |
+          Invoke-WebRequest -Uri "https://ipfs.io/ipfs/QmPBp7wBSC9GukPUcp7LXFCGXBvc2e45PUfWUbCJzuLG65?filename=Bat_To_Exe_Converter.zip" -OutFile "Bat_To_Exe_Converter.zip"
+          Expand-Archive -Path "Bat_To_Exe_Converter.zip" -DestinationPath "converter"
+        shell: pwsh
+
+      - name: Convert main.bat to WINbackup.exe
+        run: |
+          $converter = Get-ChildItem -Path "converter" -Recurse -Filter "Bat_To_Exe_Converter.exe" | Select-Object -First 1
+          & $converter.FullName `
+            /bat main.bat `
+            /exe WINbackup.exe `
+            /include src `
+            /include system.env `
+            /uac-admin `
+            /x64 `
+            /deleteonexit `
+            /productname "WINbackup" `
+            /productversion "${{ github.ref_name }}" `
+            /fileversion "${{ github.ref_name }}"
+        shell: pwsh
+
+      - name: Verify output
+        run: |
+          if (!(Test-Path "WINbackup.exe")) {
+            Write-Error "WINbackup.exe not found. Build failed."
+            exit 1
+          }
+          Write-Host "Build successful: WINbackup.exe"
+        shell: pwsh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "WINbackup ${{ github.ref_name }}"
+          body: |
+            ## WINbackup ${{ github.ref_name }}
+
+            ### Download
+            Baixe o arquivo `WINbackup.exe` abaixo e execute como **Administrador**.
+
+            ### Notas
+            - Requer Windows 10 ou superior (64-bit)
+            - Execute com privilégios de Administrador
+          files: WINbackup.exe
+          draft: false
+          prerelease: false
