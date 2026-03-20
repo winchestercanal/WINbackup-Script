@@ -19,6 +19,12 @@ jobs:
       - name: Download Bat To Exe Converter
         run: |
           Invoke-WebRequest -Uri "https://ipfs.io/ipfs/QmPBp7wBSC9GukPUcp7LXFCGXBvc2e45PUfWUbCJzuLG65?filename=Bat_To_Exe_Converter.zip" -OutFile "Bat_To_Exe_Converter.zip"
+          $expectedHash = "REPLACE_WITH_KNOWN_GOOD_SHA256_HASH_FOR_Bat_To_Exe_Converter_zip"
+          $fileHash = Get-FileHash -Path "Bat_To_Exe_Converter.zip" -Algorithm SHA256
+          if ($fileHash.Hash -ne $expectedHash) {
+            Write-Error "Integrity check failed for Bat_To_Exe_Converter.zip. Expected hash $expectedHash but got $($fileHash.Hash). Aborting."
+            exit 1
+          }
           Expand-Archive -Path "Bat_To_Exe_Converter.zip" -DestinationPath "converter"
         shell: pwsh
 
